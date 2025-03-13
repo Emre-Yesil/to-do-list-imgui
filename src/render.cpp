@@ -24,12 +24,11 @@ void WindowClass::Draw(std::string_view label)
     ImGui::SetNextWindowPos(window_pos);
 
     ImGui::Begin(label.data(), nullptr, window_flags);
-
+    //SaveContent(&task_name, program_name_data);
     DrawContent();
 
     ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height);
     
-
     ImGui::End();
 }
 
@@ -38,37 +37,47 @@ void WindowClass::DrawContent(){
     
     if(!task_name.empty())
     {
-        //resize it
+        //--------------------------------------------
+        //resize if not sizo of vectors same
         if (task_is_done.size() != task_name.size()) {
            task_is_done.resize(task_name.size(), "0\n");
         }
+
         if (task_comment.size() != task_name.size()) {
             task_comment.resize(task_name.size(), "");
         }
 
+        //-------------------------------------------------
+        //draw tasks
         for(size_t i = 0; i < task_name.size(); i++)
         {
-            std::string label = task_name[i] + std::to_string(i);  
+            std::string label = std::to_string(i+1) + "- " + task_name[i];  
             
             bool checked;
-            auto c = task_is_done[i].c_str();
-            if(*c == '0'){
-                checked = false;
-                std::cout<<"false is called"<< c << typeid(c).name() << "\n";
-            }
-            else{
-                checked = true;
-                std::cout<<"true is called "<< c << typeid(c).name() <<"\n";
-            }
-                
+            auto c = task_is_done[i].c_str(); //auto  gives const char pointer array
 
+            if(*c == '0')
+                checked = false;
+            else
+                checked = true;
+             
             if (ImGui::Checkbox(label.data(), &checked)) {
-                std::cout<<"draw content is called"<<std::endl;
+                //save the data to text file
+                if(checked)
+                    task_is_done[i] = '1';
+                else{
+                    task_is_done[i] = '0';
+                }
+                std::cout<<task_is_done[i];
+                SaveContent(&task_is_done, program_check_data);
+                std::cout<<"draw content is called for "<< i<<std::endl;
+
             }
             
         }
     }
-    
+    //----------------------------
+    //buttons
     if(ImGui::Button("add")){
         addTask();
     }
@@ -84,6 +93,7 @@ void WindowClass::DrawContent(){
         deleteTask();
     }
 }
+//-------------------------------------
 //load contents
 void WindowClass::loadContent(std::vector<std::string> *content, const std::string path)
 {
@@ -97,16 +107,32 @@ void WindowClass::loadContent(std::vector<std::string> *content, const std::stri
         while(std::getline(in, line))
         {
             content->push_back(line);
-
             std::cout << line << std::endl;
         } 
         in.close();
-    } 
+    }
 }
-
+//----------------------------------------
 //save contents
+void WindowClass::SaveContent(std::vector<std::string> *content, std::string path){
+    
+    std::cout<<"saveContent called\n";
 
+    auto in = std::ifstream(path.data());
 
+    std::string textbuffer;
+
+    if(in.is_open())
+    {
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        textbuffer = buffer.str();
+        std::cout<<textbuffer<<std::endl;
+        in.close();
+    }
+    
+}
+//------------------------------------
 //buttons
 void WindowClass::addTask(){
 
