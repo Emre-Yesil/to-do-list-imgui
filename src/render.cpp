@@ -118,19 +118,17 @@ void WindowClass::SaveContent(std::vector<std::string> *content, std::string pat
     
     std::cout<<"saveContent called\n";
 
-    auto in = std::ifstream(path.data());
-
     std::string textbuffer;
 
-    if(in.is_open())
-    {
-        std::stringstream buffer;
-        buffer << in.rdbuf();
-        textbuffer = buffer.str();
-        std::cout<<textbuffer<<std::endl;
-        in.close();
+    std::string line;
+    for(size_t i = 0;  i < content->size(); i++){
+        line = (*content)[i];
+        textbuffer = textbuffer + line + '\n';
     }
-    
+    std::cout<<textbuffer<<std::endl;
+    std::ofstream out{path.data()};
+    out << textbuffer;
+    loadContent(content, path);
 }
 //------------------------------------
 //buttons
