@@ -17,6 +17,7 @@ void WindowClass::Draw(std::string_view label)
     constexpr static auto window_flags =
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
+
     constexpr static auto window_size = ImVec2(1280.0F, 720.0F);
     constexpr static auto window_pos = ImVec2(0.0F, 0.0F);
 
@@ -24,10 +25,7 @@ void WindowClass::Draw(std::string_view label)
     ImGui::SetNextWindowPos(window_pos);
 
     ImGui::Begin(label.data(), nullptr, window_flags);
-    //SaveContent(&task_name, program_name_data);
     DrawContent();
-
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height);
     
     ImGui::End();
 }
@@ -51,7 +49,7 @@ void WindowClass::DrawContent(){
         //draw tasks
         for(size_t i = 0; i < task_name.size(); i++)
         {
-            std::string label = std::to_string(i+1) + "- " + task_name[i];  
+            std::string label = std::to_string(i+1) + "- ";  
             
             bool checked;
             auto c = task_is_done[i].c_str(); //auto  gives const char pointer array
@@ -68,14 +66,22 @@ void WindowClass::DrawContent(){
                 else{
                     task_is_done[i] = '0';
                 }
-                std::cout<<task_is_done[i];
                 SaveContent(&task_is_done, program_check_data);
-                std::cout<<"draw content is called for "<< i<<std::endl;
+                //loadContent(&task_is_done, program_check_data); //it may does not need it
+            }
+            ImGui::SameLine();
 
+            const auto check = (selectedTask == i);
+
+            std::string selectableLabel = task_name[i]+ "--" + std::to_string(i);
+
+            if(ImGui::Selectable(selectableLabel.data(), check, 0, ImVec2(100.0F, 0.0F))){
+                selectedTask = i;
             }
             
         }
     }
+    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height);
     //----------------------------
     //buttons
     if(ImGui::Button("add")){
@@ -128,7 +134,6 @@ void WindowClass::SaveContent(std::vector<std::string> *content, std::string pat
     std::cout<<textbuffer<<std::endl;
     std::ofstream out{path.data()};
     out << textbuffer;
-    loadContent(content, path);
 }
 //------------------------------------
 //buttons
@@ -136,6 +141,7 @@ void WindowClass::addTask(){
 
 }
 void WindowClass::editTask(){
+
 
 }
 void WindowClass::deleteTask(){

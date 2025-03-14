@@ -106,9 +106,20 @@ int main(int, char **)
     auto &style = ImGui::GetStyle();
     style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(1.0, 1.0, 1.0, 1.0);
     style.Colors[ImGuiCol_TableBorderLight] = ImVec4(1.0, 1.0, 1.0, 1.0);
+    style.FrameRounding = 10.0F;
+    style.WindowPadding = ImVec2(15, 15);
+    ImVec4* colors = style.Colors;
+    //set theme I love this kind of stuff while building gui 
+    colors[ImGuiCol_WindowBg] = ImVec4(0.3f, 0.3f, 0.32f, 1.0f);
+    colors[ImGuiCol_Button] = ImVec4(1.0f, 0.0f, 0.0F, 1.0f);
+    //colors[ImGuiCol_] = ImVec4(1.0f, 0.0f, 0.0F, 1.0f);
+    colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 0.0f, 0.0F, 1.0f);
+    
 
     WindowClass window_obj;
     window_obj.loadContent(&(window_obj.task_name) ,(window_obj.program_name_data));
+    window_obj.loadContent(&(window_obj.task_is_done) ,(window_obj.program_check_data));
+    window_obj.loadContent(&(window_obj.task_comment) ,(window_obj.program_comment_data));
     //window_obj.loadContent(&(window_obj.task_is_done) ,(window_obj.programe_check_data));
     while (!glfwWindowShouldClose(window))
     {

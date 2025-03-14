@@ -26,7 +26,7 @@ public:
     void SaveContent(std::vector<std::string> *content, std::string path);
 
 private:   
-    int selectedTask;
+    size_t selectedTask;
 
     void DrawContent();
 
