@@ -7,8 +7,11 @@
 #include <string>
 #include <string_view>
 #include <fstream>
-#include <sstream>
-#include <typeinfo>
+//#include <sstream>
+//#include <typeinfo>
+
+#include <windows.h>
+#include <shlobj.h>
 
 #include "render.hpp"
 
@@ -18,13 +21,14 @@ void WindowClass::Draw(std::string_view label)
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
 
-    constexpr static auto window_size = ImVec2(1280.0F, 720.0F);
+    constexpr static auto window_size = ImVec2(360.0F, 480.0F);
     constexpr static auto window_pos = ImVec2(0.0F, 0.0F);
 
     ImGui::SetNextWindowSize(window_size);
     ImGui::SetNextWindowPos(window_pos);
 
     ImGui::Begin(label.data(), nullptr, window_flags);
+    
     DrawContent();
     
     ImGui::End();
@@ -34,7 +38,18 @@ void WindowClass::Draw(std::string_view label)
 void WindowClass::DrawContent(){
     
     if(!task_name.empty())
-    {
+    {   
+        //--------------------------------
+        //add task button
+        ImGui::Columns(2, "col", false);
+        ImGui::SetColumnOffset(1, 38.0F);
+        for(size_t i = 0; i < task_name.size()+1; i++){
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+            ImGui::Text("| ");
+            ImGui::PopStyleColor();
+        }
+        if(ImGui::Button("+", ImVec2(20.0F, 25.0F))){
+        }
         //--------------------------------------------
         //resize if not sizo of vectors same
         if (task_is_done.size() != task_name.size()) {
@@ -44,12 +59,12 @@ void WindowClass::DrawContent(){
         if (task_comment.size() != task_name.size()) {
             task_comment.resize(task_name.size(), "");
         }
-
         //-------------------------------------------------
-        //draw tasks
+        //draw task
+        ImGui::NextColumn();
         for(size_t i = 0; i < task_name.size(); i++)
         {
-            std::string label = std::to_string(i+1) + "- ";  
+            std::string label = "###" + std::to_string(i+1);  
             
             bool checked;
             auto c = task_is_done[i].c_str(); //auto  gives const char pointer array
@@ -58,7 +73,7 @@ void WindowClass::DrawContent(){
                 checked = false;
             else
                 checked = true;
-             
+            
             if (ImGui::Checkbox(label.data(), &checked)) {
                 //save the data to text file
                 if(checked)
@@ -67,37 +82,26 @@ void WindowClass::DrawContent(){
                     task_is_done[i] = '0';
                 }
                 SaveContent(&task_is_done, program_check_data);
-                //loadContent(&task_is_done, program_check_data); //it may does not need it
             }
             ImGui::SameLine();
 
             const auto check = (selectedTask == i);
 
-            std::string selectableLabel = task_name[i]+ "--" + std::to_string(i);
-
+            std::string selectableLabel = task_name[i];
+            
             if(ImGui::Selectable(selectableLabel.data(), check, 0, ImVec2(100.0F, 0.0F))){
                 selectedTask = i;
+                editTask();
+                std::cout<<selectedTask<<'\n';
             }
-            
+        }
+    }else{
+        //if task is empty
+        if(ImGui::Button(" +")){
+            addTask();
         }
     }
-    ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height);
-    //----------------------------
-    //buttons
-    if(ImGui::Button("add")){
-        addTask();
-    }
-    ImGui::SameLine();
-
-    if(ImGui::Button("edit")){
-        editTask();
-    }
-
-    ImGui::SameLine();
     
-    if(ImGui::Button("delete")){
-        deleteTask();
-    }
 }
 //-------------------------------------
 //load contents
@@ -142,13 +146,23 @@ void WindowClass::addTask(){
 }
 void WindowClass::editTask(){
 
-
 }
 void WindowClass::deleteTask(){
 
 }
+void WindowClass::loadFont(){
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Get Windows font directory
+    char fontPath[MAX_PATH];
+    SHGetFolderPathA(nullptr, CSIDL_FONTS, nullptr, 0, fontPath);
+    strcat_s(fontPath, "\\arial.ttf");  // Use Arial as the default font
+
+    // Load the font
+    io.Fonts->AddFontFromFileTTF(fontPath, 18.0f);
+} 
 
 void render(WindowClass &window_obj)
 {
-    window_obj.Draw("Label");
+    window_obj.Draw("###Label");
 }

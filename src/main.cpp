@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <filesystem>
 
+
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_impl_opengl3_loader.h"
@@ -19,8 +20,8 @@
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
-constexpr auto WINDOW_WIDTH = std::uint32_t{1280};
-constexpr auto WINDOW_HEIGHT = std::uint32_t{720};
+constexpr auto WINDOW_WIDTH = std::uint32_t{360};
+constexpr auto WINDOW_HEIGHT = std::uint32_t{480};
 
 namespace fs = std::filesystem;
 
@@ -96,24 +97,31 @@ int main(int, char **)
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsLight();
     ImPlot::CreateContext();
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    auto &style = ImGui::GetStyle();
-    style.Colors[ImGuiCol_TableBorderStrong] = ImVec4(1.0, 1.0, 1.0, 1.0);
-    style.Colors[ImGuiCol_TableBorderLight] = ImVec4(1.0, 1.0, 1.0, 1.0);
-    style.FrameRounding = 10.0F;
-    style.WindowPadding = ImVec2(15, 15);
-    ImVec4* colors = style.Colors;
+
     //set theme I love this kind of stuff while building gui 
-    colors[ImGuiCol_WindowBg] = ImVec4(0.3f, 0.3f, 0.32f, 1.0f);
-    colors[ImGuiCol_Button] = ImVec4(1.0f, 0.0f, 0.0F, 1.0f);
-    //colors[ImGuiCol_] = ImVec4(1.0f, 0.0f, 0.0F, 1.0f);
-    colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 0.0f, 0.0F, 1.0f);
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.FrameRounding = 6.0f;
+    style.WindowRounding = 8.0f;
+    style.ScrollbarRounding = 5.0f;
+    style.ItemSpacing = ImVec2(8, 6);
+    style.WindowPadding = ImVec2(15, 15);
+    
+    ImVec4* colors = style.Colors;
+    colors[ImGuiCol_Text] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f); // Beyaz metin
+    //colors[ImGuiCol_WindowBg] = ImVec4(0.12f, 0.14f, 0.17f, 1.0f); // Koyu gri pencere
+    //colors[ImGuiCol_Button] = ImVec4(1.0f, 0.1f, 0.1f, 1.0f); // Mavi buton
+    //colors[ImGuiCol_ButtonHovered] = ImVec4(0.3f, 0.4f, 1.0f, 1.0f);
+    //colors[ImGuiCol_ButtonActive] = ImVec4(0.1f, 0.2f, 0.6f, 1.0f);
+    //colors[ImGuiCol_FrameBg] = ImVec4(0.15f, 0.16f, 0.18f, 1.0f); // Giriş kutuları arka planı
+    //colors[ImGuiCol_FrameBgHovered] = ImVec4(0.2f, 0.2f, 0.25f, 1.0f);
+    colors[ImGuiCol_CheckMark] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
     
 
     WindowClass window_obj;
@@ -121,10 +129,10 @@ int main(int, char **)
     window_obj.loadContent(&(window_obj.task_is_done) ,(window_obj.program_check_data));
     window_obj.loadContent(&(window_obj.task_comment) ,(window_obj.program_comment_data));
     //window_obj.loadContent(&(window_obj.task_is_done) ,(window_obj.programe_check_data));
+    window_obj.loadFont();
     while (!glfwWindowShouldClose(window))
     {
         start_cycle();
-
         ImGui::NewFrame();
         render(window_obj);
         ImGui::Render();

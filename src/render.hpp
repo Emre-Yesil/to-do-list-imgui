@@ -23,7 +23,8 @@ public:
     void Draw(std::string_view label);
 
     void loadContent(std::vector<std::string> *content, std::string path);
-    void SaveContent(std::vector<std::string> *content, std::string path);
+    void SaveContent(std::vector<std::string> *content, std::string path);//it maybe go to the private
+    void loadFont();
 
 private:   
     size_t selectedTask;
