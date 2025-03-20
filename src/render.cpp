@@ -17,13 +17,6 @@
 
 void WindowClass::Draw(std::string_view label)
 {
-    constexpr static auto window_flags =
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
-
-    constexpr static auto window_size = ImVec2(360.0F, 480.0F);
-    constexpr static auto window_pos = ImVec2(0.0F, 0.0F);
-
     ImGui::SetNextWindowSize(window_size);
     ImGui::SetNextWindowPos(window_pos);
 
@@ -36,21 +29,29 @@ void WindowClass::Draw(std::string_view label)
 
 
 void WindowClass::DrawContent(){
-    
+
     if(!task_name.empty())
     {   
         //--------------------------------
         //add task button
         ImGui::Columns(2, "col", false);
         ImGui::SetColumnOffset(1, 38.0F);
-        for(size_t i = 0; i < task_name.size()+1; i++){
+        for(size_t i = 0; i < task_name.size(); i++){
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-            ImGui::Text("| ");
+            ImGui::SetWindowFontScale(1.35f);
+            ImGui::Text(" |");
             ImGui::PopStyleColor();
         }
+        ImGui::SetWindowFontScale(1.0f);
         if(ImGui::Button("+", ImVec2(20.0F, 25.0F))){
+            show_modal_popup = true;
+            ImGui::OpenPopup("###add_popup");
         }
-        //--------------------------------------------
+        if (show_modal_popup) {
+            addTask();
+        }
+        
+        //-------------------------------------------- move it another place
         //resize if not sizo of vectors same
         if (task_is_done.size() != task_name.size()) {
            task_is_done.resize(task_name.size(), "0\n");
@@ -100,8 +101,7 @@ void WindowClass::DrawContent(){
         if(ImGui::Button(" +")){
             addTask();
         }
-    }
-    
+    } 
 }
 //-------------------------------------
 //load contents
@@ -143,6 +143,33 @@ void WindowClass::SaveContent(std::vector<std::string> *content, std::string pat
 //buttons
 void WindowClass::addTask(){
 
+    static char log[25];
+
+    ImGui::SetNextWindowPos(ImVec2(10.0F, 10.0F));
+    ImGui::SetNextWindowSize(popUpSize);
+
+    if(ImGui::BeginPopupModal("###add_popup", nullptr, popupFlags)){
+
+        ImGui::Text("Task name :");
+        ImGui::SameLine();
+        ImGui::InputText("###add_Task_name", log, sizeof(log));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.9f, 0.0f, 1.0f));
+        if(ImGui::Button("Save")){
+            show_modal_popup = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::PopStyleColor();
+    
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+        if(ImGui::Button("Cancel")){
+            show_modal_popup = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::PopStyleColor();
+
+        ImGui::EndPopup();
+    }  
 }
 void WindowClass::editTask(){
 
