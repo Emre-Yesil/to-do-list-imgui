@@ -43,7 +43,7 @@ private:
 
     void DrawContent();
 
-    void editTask();
+    void editTask(int selected);
     void addTask();
     void deleteTask();
 

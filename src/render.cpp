@@ -27,7 +27,6 @@ void WindowClass::Draw(std::string_view label)
     ImGui::End();
 }
 
-
 void WindowClass::DrawContent(){
 
     if(!task_name.empty())
@@ -50,15 +49,15 @@ void WindowClass::DrawContent(){
         if (show_modal_popup) {
             addTask();
         }
-        
         //-------------------------------------------- move it another place
         //resize if not sizo of vectors same
+        
         if (task_is_done.size() != task_name.size()) {
            task_is_done.resize(task_name.size(), "0\n");
         }
 
         if (task_comment.size() != task_name.size()) {
-            task_comment.resize(task_name.size(), "");
+            task_comment.resize(task_name.size(), "\n");
         }
         //-------------------------------------------------
         //draw task
@@ -92,7 +91,7 @@ void WindowClass::DrawContent(){
             
             if(ImGui::Selectable(selectableLabel.data(), check, 0, ImVec2(100.0F, 0.0F))){
                 selectedTask = i;
-                editTask();
+                editTask(i);
                 std::cout<<selectedTask<<'\n';
             }
         }
@@ -113,9 +112,11 @@ void WindowClass::loadContent(std::vector<std::string> *content, const std::stri
     if(in.is_open())
     {
         std::string line;
+        char to_remove = '$';
         
-        while(std::getline(in, line))
+        while(std::getline(std::cin, line, '$')) // while(std::getline(std::cin, line, '$')) /*while(std::getline(in, line)) */
         {
+            line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
             content->push_back(line);
             std::cout << line << std::endl;
         } 
@@ -133,7 +134,7 @@ void WindowClass::SaveContent(std::vector<std::string> *content, std::string pat
     std::string line;
     for(size_t i = 0;  i < content->size(); i++){
         line = (*content)[i];
-        textbuffer = textbuffer + line + '\n';
+        textbuffer = textbuffer + line + "\n"; /*'\n'*/
     }
     std::cout<<textbuffer<<std::endl;
     std::ofstream out{path.data()};
@@ -143,8 +144,9 @@ void WindowClass::SaveContent(std::vector<std::string> *content, std::string pat
 //buttons
 void WindowClass::addTask(){
 
-    static char log[25];
-
+    static char nameLog[25];
+    static char commentLog[512];
+    
     ImGui::SetNextWindowPos(ImVec2(10.0F, 10.0F));
     ImGui::SetNextWindowSize(popUpSize);
 
@@ -152,27 +154,62 @@ void WindowClass::addTask(){
 
         ImGui::Text("Task name :");
         ImGui::SameLine();
-        ImGui::InputText("###add_Task_name", log, sizeof(log));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.9f, 0.0f, 1.0f));
-        if(ImGui::Button("Save")){
+        ImGui::InputText("###add_Task_name", nameLog, sizeof(nameLog));
+         
+        ImGui::Separator();
+
+        ImGui::Text("Comment :");
+        ImGui::SameLine();
+        ImGui::InputText("###add_comment", commentLog, sizeof(commentLog));
+
+        ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height );
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.466f, 0.866f, 0.462f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.741f, 0.90f, 0.741f, 1.0f));
+
+        if(ImGui::Button("Save"))
+        {
             show_modal_popup = false;
+
+            task_name.push_back(std::string(nameLog));
+            task_comment.push_back(std::string(commentLog));
+            task_is_done.push_back("0$");
+
+            SaveContent(&task_name, program_name_data);
+            SaveContent(&task_comment, program_comment_data);
+
+            memset(nameLog, 0, sizeof(nameLog));
+            memset(commentLog, 0, sizeof(commentLog));
+
             ImGui::CloseCurrentPopup();
         }
-        ImGui::PopStyleColor();
+        ImGui::PopStyleColor(2);
     
         ImGui::SameLine();
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
-        if(ImGui::Button("Cancel")){
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.412f, 0.384f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.713f, 0.70f, 1.0f));
+
+        if(ImGui::Button("Cancel"))
+        {
             show_modal_popup = false;
+
+            memset(nameLog, 0, sizeof(nameLog));
+            memset(commentLog, 0, sizeof(commentLog));
+
             ImGui::CloseCurrentPopup();
         }
-        ImGui::PopStyleColor();
+        ImGui::PopStyleColor(2);
 
         ImGui::EndPopup();
+        
     }  
+    
 }
-void WindowClass::editTask(){
+void WindowClass::editTask(int selected){
+    static char log[512];
+    if(ImGui::BeginPopupModal("###edit_task_popup", nullptr, popupFlags)){
+        
 
+    }
 }
 void WindowClass::deleteTask(){
 
