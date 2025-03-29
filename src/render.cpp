@@ -2,18 +2,24 @@
 
 //#include <fmt/format.h>
 #include <imgui.h>
+#include "imgui_impl_glfw.h"
+#include <imgui_impl_opengl3.h>
 //#include <implot.h>
+
 #include <vector>
 #include <string>
 #include <string_view>
 #include <fstream>
+#include <algorithm>
 //#include <sstream>
 //#include <typeinfo>
+#include <GLFW/glfw3.h>
 
 #include <windows.h>
 #include <shlobj.h>
 
 #include "render.hpp"
+
 
 void WindowClass::Draw(std::string_view label)
 {
@@ -53,7 +59,7 @@ void WindowClass::DrawContent(){
         //resize if not sizo of vectors same
         
         if (task_is_done.size() != task_name.size()) {
-           task_is_done.resize(task_name.size(), "0\n");
+           task_is_done.resize(task_name.size(), "0");
         }
 
         if (task_comment.size() != task_name.size()) {
@@ -91,16 +97,44 @@ void WindowClass::DrawContent(){
             
             if(ImGui::Selectable(selectableLabel.data(), check, 0, ImVec2(100.0F, 0.0F))){
                 selectedTask = i;
-                editTask(i);
+                show_modal_popup = true;
+                ImGui::OpenPopup("###add_popup");
                 std::cout<<selectedTask<<'\n';
             }
+            if(show_modal_popup)
+                editTask(i);
         }
+        
     }else{
-        //if task is empty
-        if(ImGui::Button(" +")){
+        if(ImGui::Button("+", ImVec2(20.0F, 25.0F))){
+            show_modal_popup = true;
+            ImGui::OpenPopup("###add_popup");
+        }
+        if (show_modal_popup) {
             addTask();
         }
     } 
+    ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - 80 ,ImGui::GetWindowHeight() - 80));
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.412f, 0.384f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.713f, 0.70f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 0.412f, 0.384f, 1.0f));
+
+    if(ImGui::Button("Delete", ImVec2(60.0F, 60.0F)) && task_name.size() != 0 && selectedTask != -1){
+
+        task_name.erase(task_name.begin() + selectedTask);
+        task_comment.erase(task_comment.begin() + selectedTask);
+        task_is_done.erase(task_is_done.begin() + selectedTask);
+
+        SaveContent(&task_name, program_name_data);
+        SaveContent(&task_comment, program_comment_data);
+        SaveContent(&task_is_done, program_check_data);
+
+        for(size_t i = 0; i < task_name.size(); i++){
+            std::cout<<task_name[i]<<std::endl;
+        }
+    }
+    ImGui::PopStyleColor(3);
 }
 //-------------------------------------
 //load contents
@@ -112,11 +146,10 @@ void WindowClass::loadContent(std::vector<std::string> *content, const std::stri
     if(in.is_open())
     {
         std::string line;
-        char to_remove = '$';
-        
-        while(std::getline(std::cin, line, '$')) // while(std::getline(std::cin, line, '$')) /*while(std::getline(in, line)) */
+
+        while(std::getline(in, line)) // while(std::getline(std::cin, line, '$')) /*while(std::getline(in, line)) */
         {
-            line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
+            //line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
             content->push_back(line);
             std::cout << line << std::endl;
         } 
@@ -160,7 +193,7 @@ void WindowClass::addTask(){
 
         ImGui::Text("Comment :");
         ImGui::SameLine();
-        ImGui::InputText("###add_comment", commentLog, sizeof(commentLog));
+        ImGui::InputTextMultiline("###add_comment", commentLog, sizeof(commentLog));
 
         ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height );
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.466f, 0.866f, 0.462f, 1.0f));
@@ -171,8 +204,13 @@ void WindowClass::addTask(){
             show_modal_popup = false;
 
             task_name.push_back(std::string(nameLog));
-            task_comment.push_back(std::string(commentLog));
-            task_is_done.push_back("0$");
+            std::string buffer(commentLog);
+
+            std::replace(buffer.begin(), buffer.end(), '\n', '%');
+            std::strcpy(commentLog, buffer.c_str());
+            //it should be just a buffer , extra step
+            task_comment.push_back(std::string(commentLog)); 
+            task_is_done.push_back("0");
 
             SaveContent(&task_name, program_name_data);
             SaveContent(&task_comment, program_comment_data);
@@ -205,11 +243,80 @@ void WindowClass::addTask(){
     
 }
 void WindowClass::editTask(int selected){
-    static char log[512];
-    if(ImGui::BeginPopupModal("###edit_task_popup", nullptr, popupFlags)){
-        
+    static char nameLog[25];
+    static char commentLog[512];
 
-    }
+    std::strcpy(nameLog, (task_name[selected]).c_str()); //potantial error when selected is zero
+    std::strcpy(commentLog, (task_comment[selected]).c_str());
+
+    ImGui::SetNextWindowPos(ImVec2(10.0F, 10.0F));
+    ImGui::SetNextWindowSize(popUpSize);
+
+    if(ImGui::BeginPopupModal("###edit_popup", nullptr, popupFlags)){
+
+        ImGui::Text("Task name :");
+        ImGui::SameLine();
+        ImGui::InputText("###add_Task_name", nameLog, sizeof(nameLog));
+         
+        ImGui::Separator();
+
+        ImGui::Text("Comment :");
+        ImGui::SameLine();
+        // it is wrong becouse of commend log is empty
+        std::string buffer(commentLog); 
+        std::replace(buffer.begin(), buffer.end(), '%', '\n');
+        std::strcpy(commentLog, buffer.c_str());
+        ImGui::InputTextMultiline("###add_comment", commentLog, sizeof(commentLog));
+
+        ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height );
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.466f, 0.866f, 0.462f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.741f, 0.90f, 0.741f, 1.0f));
+
+        if(ImGui::Button("Save"))
+        {
+            show_modal_popup = false;
+
+            //hell no
+            //task_name.push_back(std::string(nameLog));
+            task_name[selected] = std::string(nameLog);
+
+            //comments
+            std::string buffer(commentLog);
+
+            std::replace(buffer.begin(), buffer.end(), '\n', '%');
+            std::strcpy(commentLog, buffer.c_str()); //it is unnessesery
+
+            //I want to just replace it its wrong
+            task_comment[selected] = buffer;
+
+            SaveContent(&task_name, program_name_data);
+            SaveContent(&task_comment, program_comment_data);
+
+            memset(nameLog, 0, sizeof(nameLog));
+            memset(commentLog, 0, sizeof(commentLog));
+
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::PopStyleColor(2);
+    
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.412f, 0.384f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.713f, 0.70f, 1.0f));
+
+        if(ImGui::Button("Cancel"))
+        {
+            show_modal_popup = false;
+
+            //memset(nameLog, 0, sizeof(nameLog));
+            //memset(commentLog, 0, sizeof(commentLog));
+
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::PopStyleColor(2);
+
+        ImGui::EndPopup();
+        
+    }  
 }
 void WindowClass::deleteTask(){
 

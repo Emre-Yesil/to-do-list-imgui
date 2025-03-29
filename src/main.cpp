@@ -1,6 +1,6 @@
+#include <iostream>
 #include <cstdint>
 #include <filesystem>
-
 
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -130,6 +130,7 @@ int main(int, char **)
     window_obj.loadContent(&(window_obj.task_comment) ,(window_obj.program_comment_data));
     //window_obj.loadContent(&(window_obj.task_is_done) ,(window_obj.programe_check_data));
     window_obj.loadFont();
+
     while (!glfwWindowShouldClose(window))
     {
         start_cycle();
@@ -156,3 +157,4 @@ void glfw_error_callback(int error, const char *description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
+

@@ -1,11 +1,12 @@
 #pragma once
-
+#include <imgui.h>
 #include <cstdint>
 #include <string_view>
 #include <vector>
 #include <fstream>
 #include <string>
 #include <string_view>
+
 
 class WindowClass
 {
@@ -19,6 +20,10 @@ public:
     constexpr static auto window_flags =
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
+
+    constexpr static auto input_flags =
+     ImGuiInputTextFlags_NoHorizontalScroll;
+    //ImGuiInputTextFlags_CtrlEnterForNewLine |
 
     constexpr static auto window_size = ImVec2(360.0F, 480.0F);
     constexpr static auto window_pos = ImVec2(0.0F, 0.0F);
@@ -38,8 +43,9 @@ public:
     void SaveContent(std::vector<std::string> *content, std::string path);//it maybe go to the private
     void loadFont();
 
+
 private:   
-    size_t selectedTask;
+    int selectedTask = -1;
 
     void DrawContent();
 
@@ -47,7 +53,7 @@ private:
     void addTask();
     void deleteTask();
 
-    bool show_modal_popup = false;
+    bool show_modal_popup = false; 
     
 };
 
