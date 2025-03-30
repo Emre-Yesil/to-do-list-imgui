@@ -56,8 +56,8 @@ void WindowClass::DrawContent(){
             addTask();
         }
         //-------------------------------------------- move it another place
+
         //resize if not sizo of vectors same
-        
         if (task_is_done.size() != task_name.size()) {
            task_is_done.resize(task_name.size(), "0");
         }
@@ -68,7 +68,8 @@ void WindowClass::DrawContent(){
         //-------------------------------------------------
         //draw task
         ImGui::NextColumn();
-        for(size_t i = 0; i < task_name.size(); i++)
+        size_t i;
+        for(i = 0; i < task_name.size(); i++)
         {
             std::string label = "###" + std::to_string(i+1);  
             
@@ -98,12 +99,12 @@ void WindowClass::DrawContent(){
             if(ImGui::Selectable(selectableLabel.data(), check, 0, ImVec2(100.0F, 0.0F))){
                 selectedTask = i;
                 show_modal_popup = true;
-                ImGui::OpenPopup("###add_popup");
+                ImGui::OpenPopup("###edit_popup");
                 std::cout<<selectedTask<<'\n';
             }
-            if(show_modal_popup)
-                editTask(i);
         }
+        if(show_modal_popup)
+            editTask();
         
     }else{
         if(ImGui::Button("+", ImVec2(20.0F, 25.0F))){
@@ -242,21 +243,32 @@ void WindowClass::addTask(){
     }  
     
 }
-void WindowClass::editTask(int selected){
+void WindowClass::editTask(){
     static char nameLog[25];
     static char commentLog[512];
 
-    std::strcpy(nameLog, (task_name[selected]).c_str()); //potantial error when selected is zero
-    std::strcpy(commentLog, (task_comment[selected]).c_str());
+    std::cout<<"1a"<<std::endl;
+    std::strcpy(nameLog, (task_name[selectedTask].c_str())); //potantial error when selected is zero
+    std::strcpy(commentLog, (task_comment.at(selectedTask).c_str()));
+
+    std::cout<<nameLog<<std::endl;
+    std::cout<<commentLog<<std::endl;
 
     ImGui::SetNextWindowPos(ImVec2(10.0F, 10.0F));
     ImGui::SetNextWindowSize(popUpSize);
 
+    std::cout<<"2b"<<std::endl;
     if(ImGui::BeginPopupModal("###edit_popup", nullptr, popupFlags)){
 
+        std::cout<<"3c"<<std::endl;
         ImGui::Text("Task name :");
         ImGui::SameLine();
-        ImGui::InputText("###add_Task_name", nameLog, sizeof(nameLog));
+        std::cout<<nameLog<<std::endl;
+
+        if(ImGui::InputText("###edit_Task_name", nameLog, sizeof(nameLog))){
+            std::cout<<nameLog<<"---++"<<std::endl;
+            task_name[selectedTask] = std::string(nameLog);
+        }
          
         ImGui::Separator();
 
@@ -266,19 +278,23 @@ void WindowClass::editTask(int selected){
         std::string buffer(commentLog); 
         std::replace(buffer.begin(), buffer.end(), '%', '\n');
         std::strcpy(commentLog, buffer.c_str());
-        ImGui::InputTextMultiline("###add_comment", commentLog, sizeof(commentLog));
+
+        if(ImGui::InputTextMultiline("###edit_comment", commentLog, sizeof(commentLog))){
+            std::cout<<commentLog<<"---++"<<std::endl;
+            std::replace(buffer.begin(), buffer.end(), '\n', '%');
+            std::strcpy(commentLog, buffer.c_str()); //it is unnessesery
+            std::cout<<commentLog<<" "<<buffer<<std::endl;
+            task_comment[selectedTask] = std::string(commentLog);
+        }
 
         ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height );
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.466f, 0.866f, 0.462f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.741f, 0.90f, 0.741f, 1.0f));
+        std::cout<<"4d"<<std::endl;
 
         if(ImGui::Button("Save"))
         {
             show_modal_popup = false;
-
-            //hell no
-            //task_name.push_back(std::string(nameLog));
-            task_name[selected] = std::string(nameLog);
 
             //comments
             std::string buffer(commentLog);
@@ -287,7 +303,6 @@ void WindowClass::editTask(int selected){
             std::strcpy(commentLog, buffer.c_str()); //it is unnessesery
 
             //I want to just replace it its wrong
-            task_comment[selected] = buffer;
 
             SaveContent(&task_name, program_name_data);
             SaveContent(&task_comment, program_comment_data);
@@ -315,7 +330,6 @@ void WindowClass::editTask(int selected){
         ImGui::PopStyleColor(2);
 
         ImGui::EndPopup();
-        
     }  
 }
 void WindowClass::deleteTask(){

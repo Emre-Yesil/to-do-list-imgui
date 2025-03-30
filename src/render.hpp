@@ -22,7 +22,7 @@ public:
         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
 
     constexpr static auto input_flags =
-     ImGuiInputTextFlags_NoHorizontalScroll;
+     ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_CallbackEdit;
     //ImGuiInputTextFlags_CtrlEnterForNewLine |
 
     constexpr static auto window_size = ImVec2(360.0F, 480.0F);
@@ -49,7 +49,7 @@ private:
 
     void DrawContent();
 
-    void editTask(int selected);
+    void editTask();
     void addTask();
     void deleteTask();
 
