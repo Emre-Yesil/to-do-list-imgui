@@ -96,11 +96,13 @@ void WindowClass::DrawContent(){
 
             std::string selectableLabel = task_name[i];
             
-            if(ImGui::Selectable(selectableLabel.data(), check, 0, ImVec2(100.0F, 0.0F))){
+            if(ImGui::Selectable(selectableLabel.data(), check, selectable_flags, ImVec2(100.0F, 0.0F))){
                 selectedTask = i;
-                show_modal_popup = true;
-                ImGui::OpenPopup("###edit_popup");
-                std::cout<<selectedTask<<'\n';
+                if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)){
+                    show_modal_popup = true;
+                    ImGui::OpenPopup("###edit_popup");
+                    std::cout<<selectedTask<<'\n';
+                }
             }
         }
         if(show_modal_popup)
@@ -279,12 +281,15 @@ void WindowClass::editTask(){
         std::replace(buffer.begin(), buffer.end(), '%', '\n');
         std::strcpy(commentLog, buffer.c_str());
 
-        if(ImGui::InputTextMultiline("###edit_comment", commentLog, sizeof(commentLog))){
-            std::cout<<commentLog<<"---++"<<std::endl;
-            std::replace(buffer.begin(), buffer.end(), '\n', '%');
-            std::strcpy(commentLog, buffer.c_str()); //it is unnessesery
-            std::cout<<commentLog<<" "<<buffer<<std::endl;
-            task_comment[selectedTask] = std::string(commentLog);
+        if (ImGui::InputTextMultiline("###edit_comment", commentLog, sizeof(commentLog))) {
+            std::cout << commentLog << "---++" << std::endl;
+        
+            std::string buffer = commentLog; 
+            std::replace(buffer.begin(), buffer.end(), '\n', '%'); // '\n' -> '%'
+        
+            std::cout << buffer << std::endl;
+        
+            task_comment[selectedTask] = buffer; // Gereksiz strcpy yerine doğrudan atama
         }
 
         ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height );
