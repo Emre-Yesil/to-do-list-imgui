@@ -1,6 +1,6 @@
 # To Do List App
 This is a small To-Do List application built using C++, Dear ImGui, CMake, and vcpkg. The app provides a simple and user-friendly graphical interface to add, edit, and delete tasks easily.
-## UI
+## How the UI look like
 ![Task Manager UI 1](example_image1.png)
 ![Task Manager UI 2](example_image2.png)
 
