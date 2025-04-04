@@ -12,7 +12,7 @@ This is a small To-Do List application built using C++, Dear ImGui, CMake, and v
 - Compiler: Clang/GCC/MSVC
 ## Getting Started
 ```cmd
-git clone (git@github.com:Emre-Yesil/to-do-list-imgui.git)[git@github.com:Emre-Yesil/to-do-list-imgui.git]
+git clone (git@github.com:Emre-Yesil/to-do-list-imgui.git)[https://github.com/Emre-Yesil/to-do-list-imgui.git]
 cd to-do-list-imgui
 .\vcpkg\bootstrap-vcpkg.bat # windows
 ./vcpkg/bootstrap-vcpkg.sh # Unix
