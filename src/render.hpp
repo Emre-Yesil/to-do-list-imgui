@@ -7,7 +7,6 @@
 #include <string>
 #include <string_view>
 
-
 class WindowClass
 {
 public:
@@ -22,9 +21,9 @@ public:
         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar;
 
     constexpr static auto input_flags =
-     ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_CallbackEdit;
+     ImGuiInputTextFlags_NoHorizontalScroll;
 
-     constexpr static auto selectable_flags = ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_AllowOverlap;
+    constexpr static auto selectable_flags = ImGuiSelectableFlags_AllowDoubleClick | ImGuiSelectableFlags_AllowOverlap;
 
     constexpr static auto window_size = ImVec2(360.0F, 480.0F);
     constexpr static auto window_pos = ImVec2(0.0F, 0.0F);
@@ -52,7 +51,6 @@ private:
 
     void editTask();
     void addTask();
-    void deleteTask();
 
     bool show_modal_popup = false; 
     
