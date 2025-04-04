@@ -20,6 +20,13 @@
 
 #include "render.hpp"
 
+/*
+-- there is a error that occure when earase all the task title
+  | find more safe way to task title. example when title is empty task_name vector should be "" 
+-- InputText looks wrong change size of it
+-- sometimes a error occure when use add button that led to probably to empty vector
+*/
+
 
 void WindowClass::Draw(std::string_view label)
 {
@@ -129,6 +136,8 @@ void WindowClass::DrawContent(){
         task_comment.erase(task_comment.begin() + selectedTask);
         task_is_done.erase(task_is_done.begin() + selectedTask);
 
+        selectedTask = -1;
+
         SaveContent(&task_name, program_name_data);
         SaveContent(&task_comment, program_comment_data);
         SaveContent(&task_is_done, program_check_data);
@@ -196,6 +205,7 @@ void WindowClass::addTask(){
 
         ImGui::Text("Comment :");
         ImGui::SameLine();
+
         ImGui::InputTextMultiline("###add_comment", commentLog, sizeof(commentLog));
 
         ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height );
@@ -238,6 +248,8 @@ void WindowClass::addTask(){
 
             ImGui::CloseCurrentPopup();
         }
+        ImGui::Separator();
+        
         ImGui::PopStyleColor(2);
 
         ImGui::EndPopup();
@@ -249,65 +261,43 @@ void WindowClass::editTask(){
     static char nameLog[25];
     static char commentLog[512];
 
-    std::cout<<"1a"<<std::endl;
-    std::strcpy(nameLog, (task_name[selectedTask].c_str())); //potantial error when selected is zero
-    std::strcpy(commentLog, (task_comment.at(selectedTask).c_str()));
-
-    std::cout<<nameLog<<std::endl;
-    std::cout<<commentLog<<std::endl;
+    static std::string bufferNameLog;
+    static std::string bufferCommentLog;
 
     ImGui::SetNextWindowPos(ImVec2(10.0F, 10.0F));
     ImGui::SetNextWindowSize(popUpSize);
 
-    std::cout<<"2b"<<std::endl;
-    if(ImGui::BeginPopupModal("###edit_popup", nullptr, popupFlags)){
-
-        std::cout<<"3c"<<std::endl;
-        ImGui::Text("Task name :");
-        ImGui::SameLine();
-        std::cout<<nameLog<<std::endl;
-
-        if(ImGui::InputText("###edit_Task_name", nameLog, sizeof(nameLog))){
-            std::cout<<nameLog<<"---++"<<std::endl;
-            task_name[selectedTask] = std::string(nameLog);
+    if(ImGui::BeginPopupModal("###edit_popup", nullptr, popupFlags))
+    {
+        //name input
+        std::strcpy(nameLog, task_name.at(selectedTask).c_str());
+        if(ImGui::InputText("task name###namelog", nameLog, sizeof(nameLog))){
+            bufferNameLog = std::string(nameLog);
+            std::cout<<"char "<<nameLog<<std::endl;
+            std::cout<<"string "<<bufferNameLog<<std::endl;
         }
-         
+
         ImGui::Separator();
 
-        ImGui::Text("Comment :");
-        ImGui::SameLine();
-        // it is wrong becouse of commend log is empty
-        std::string buffer(commentLog); 
-        std::replace(buffer.begin(), buffer.end(), '%', '\n');
-        std::strcpy(commentLog, buffer.c_str());
+        bufferCommentLog = task_comment.at(selectedTask);
+        std::replace(bufferCommentLog.begin(), bufferCommentLog.end(), '%', '\n');
+        strcpy(commentLog, bufferCommentLog.c_str());
+        if(ImGui::InputTextMultiline("comment line###commentlog", commentLog, sizeof(commentLog))){
 
-        if (ImGui::InputTextMultiline("###edit_comment", commentLog, sizeof(commentLog))) {
-            std::cout << commentLog << "---++" << std::endl;
-        
-            std::string buffer = commentLog; 
-            std::replace(buffer.begin(), buffer.end(), '\n', '%'); // '\n' -> '%'
-        
-            std::cout << buffer << std::endl;
-        
-            task_comment[selectedTask] = buffer; // Gereksiz strcpy yerine doğrudan atama
+            bufferCommentLog = std::string(commentLog);
+            std::cout<<"char "<<commentLog<<std::endl;
+            std::cout<<"string "<<bufferCommentLog<<std::endl;
         }
 
         ImGui::SetCursorPosY(ImGui::GetWindowHeight() - lower_section_height );
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.466f, 0.866f, 0.462f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.741f, 0.90f, 0.741f, 1.0f));
-        std::cout<<"4d"<<std::endl;
 
-        if(ImGui::Button("Save"))
-        {
-            show_modal_popup = false;
-
-            //comments
-            std::string buffer(commentLog);
-
-            std::replace(buffer.begin(), buffer.end(), '\n', '%');
-            std::strcpy(commentLog, buffer.c_str()); //it is unnessesery
-
-            //I want to just replace it its wrong
+        if(ImGui::Button("Save")){
+            task_name.at(selectedTask) = bufferNameLog;
+            
+            std::replace(bufferCommentLog.begin(), bufferCommentLog.end(), '\n', '%');
+            task_comment.at(selectedTask) = bufferCommentLog;
 
             SaveContent(&task_name, program_name_data);
             SaveContent(&task_comment, program_comment_data);
@@ -315,28 +305,39 @@ void WindowClass::editTask(){
             memset(nameLog, 0, sizeof(nameLog));
             memset(commentLog, 0, sizeof(commentLog));
 
+            bufferNameLog.clear();
+            bufferCommentLog.clear();
+
+            show_modal_popup = false;
+
             ImGui::CloseCurrentPopup();
         }
         ImGui::PopStyleColor(2);
-    
         ImGui::SameLine();
+
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 0.412f, 0.384f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.713f, 0.70f, 1.0f));
 
-        if(ImGui::Button("Cancel"))
-        {
-            show_modal_popup = false;
+        if(ImGui::Button("Cancel")){
 
-            //memset(nameLog, 0, sizeof(nameLog));
-            //memset(commentLog, 0, sizeof(commentLog));
+            memset(nameLog, 0, sizeof(nameLog));
+            memset(commentLog, 0, sizeof(commentLog));
+
+            bufferNameLog.clear();
+            bufferCommentLog.clear();
 
             ImGui::CloseCurrentPopup();
+
+            show_modal_popup = false;
         }
+
         ImGui::PopStyleColor(2);
 
         ImGui::EndPopup();
-    }  
+    }
 }
+
+//it is unnessessery
 void WindowClass::deleteTask(){
 
 }
